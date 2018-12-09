@@ -60,8 +60,18 @@ class ZwayClient:
       self.__setPollinterval(60);
 		
     if (self.__login()):
+      firstRead = True;
       while True:
         self.__readDevices();
+		
+        if (firstRead):
+          firstRead = False;
+		  
+          for topic in self.__getConfig().getMqtt().getTopics().values():
+		    key = topic.getPath() + "/" + topic.getProperty();
+			
+		    if (key not in self.__getDevices()):
+		      logging.error("topic \"" + topic.getPath() + "\" not found!");
 	
   def __login(self):
     if (self.__getConfig().getZway().getUsername() != None and self.__getConfig().getZway().getPassword() != None):
