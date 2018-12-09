@@ -5,18 +5,18 @@ class LoggingConfig:
   
   __level = "DEBUG";
   __format = "%(asctime)-15s %(message)s";
-  __filePath = "/var/log/logger.log";
+  __filePath = "/var/log/logging.log";
 
   def __init__(self, root):
-    level = root.find("logger/level");
+    level = root.find("logging/level");
     if (level != None and level.text.strip() != ""):
       self.__setLevel(level.text.strip());
 	  
-    format= root.find("logger/format");
+    format= root.find("logging/format");
     if (format != None and format.text.strip() != ""):
       self.__setFormat(format.text.strip());
 	  
-    filePath = root.find("logger/filePath");
+    filePath = root.find("logging/filePath");
     if (filePath != None and filePath.text.strip() != ""):
       self.__setFilePath(filePath.text.strip());
 	  

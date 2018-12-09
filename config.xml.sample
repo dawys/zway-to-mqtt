@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-	<logger>
+	<logging>
 		<level>WARNING</level>
 		<format>%(asctime)-15s %(message)s</format>
 		<filePath>/var/log/zway-to-mqtt.log</filePath>
-	</logger>
+	</logging>
 	<mqtt>
 		<hostname>localhost</hostname>
 		<port>1883</port>
