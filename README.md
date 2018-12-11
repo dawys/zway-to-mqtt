@@ -79,7 +79,7 @@ if you want to init all devices
 mosquitto_pub -h localhost -u username -P password -t zway/set/init -m true
 ```
 
-if you are usinf openhab2 to read and write values
+if you are usinf openHAB2 to read and write values
 - install binding mqtt and edit services/mqtt.cfg
 - define items
 ```
