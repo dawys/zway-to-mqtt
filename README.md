@@ -48,7 +48,7 @@ systemctl start zway-to-mqtt.service
   <password>password</password>
 </zway>
 ```
-- map your onewire devices to topics
+- map your zway devices to topics
 ```
 <mqtt>
   <topics>
