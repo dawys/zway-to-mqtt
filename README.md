@@ -8,7 +8,7 @@ A running [z-way-server](https://z-wave.me/z-way/download-z-way/) and a mqtt-bro
 
 - install a broker like mosquitto
 ```
-apt-get install mosquitto
+apt-get install mosquitto mosquitto-clients
 ```
 
 - install software
