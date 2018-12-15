@@ -8,6 +8,7 @@ from device import Device;
 class ZwayClient:
 
   __PATH = "/ZAutomation/api/v1";
+  
   __config = None;
   __mqttClient = None;
   __sid = None;
@@ -139,7 +140,7 @@ class ZwayClient:
           return;
 		  
         if (response.status_code == 200):
-          self.__publishDevice(temp, value);
+          self.__publishDevice(temp, value, None, True);
 
           logging.info("did update device: " + url);
         elif (response.status_code == 403):
@@ -178,7 +179,7 @@ class ZwayClient:
                   value = metrics["level"];
 			  
                   deviceType = device["deviceType"];			  
-                  probeType = device["probeType"];
+                  updateTime = long(device["updateTime"]) * 100;
                   id = device["id"].replace("ZWayVDev_zway_", "");
 				  
                   topics = self.__getConfig().getMqtt().getTopicsByDevice(id);
@@ -202,7 +203,7 @@ class ZwayClient:
 
                       if (update):
 
-                        self.__publishDevice(topic, value);
+                        self.__publishDevice(topic, value, updateTime, False);
       else:
         logging.error("could not refresh devices " + url + ": \n" + response.text)
     else:
@@ -211,7 +212,7 @@ class ZwayClient:
 	  
     time.sleep(self.__getPollinterval());
 	
-  def __publishDevice(self, topic, value):
+  def __publishDevice(self, topic, value, updateTime, force):
 
     if (topic.getType() == Type.INTEGER):
       value = int(value);
@@ -235,7 +236,7 @@ class ZwayClient:
       elif (value == "OFF"):
         value = "ON";
 						
-    updateTime = int(time.time() * 100);
+    now = int(time.time() * 100);
 						
     update = False;
 	
@@ -245,11 +246,14 @@ class ZwayClient:
       device = self.__getDevices()[key];
 
       if (value != device.getValue()):
-        device.setUpdateTime(updateTime);
-        device.setValue(value);
-        update = True;
+        if (updateTime == None or updateTime > device.getUpdateTime()):
+          device.setUpdateTime(now);
+          device.setValue(value);
+          update = True;
+        else:
+          logging.warning("do not update device \"" + key + "\" from \"" + str(device.getValue()) + "\" to \"" + str(value) + "\" because updateTime is to old");
     else:
-      device = Device(value, updateTime);
+      device = Device(value, now);
       self.__getDevices()[key] = device;
       update = True;
 						
