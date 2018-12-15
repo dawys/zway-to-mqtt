@@ -61,7 +61,7 @@ systemctl start zway-to-mqtt.service
 ```
 
 ## Example
-check if ist is working
+check if it is working
 ```
 mosquitto_sub -h localhost -u username -P password -v -t '#'
 
