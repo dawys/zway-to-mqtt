@@ -83,8 +83,8 @@ if you are usinf openHAB2 to read and write values
 - install binding mqtt and edit services/mqtt.cfg
 - define items
 ```
-Item itemDiningRoomLight1Switch {mqtt=">[broker:zway/set/diningRoom/light1Switch:*:default], <[broker:zway/get/diningRoom/light1Switch:*:default], autoupdate="false"}
-Item itemDiningRoomLight1Dimmer {mqtt=">[broker:zway/set/diningRoom/light1Dimmer:*:default], <[broker:zway/get/diningRoom/light1Dimmer:*:default], autoupdate="false"}
+Item itemDiningRoomLight1Switch {mqtt=">[broker:zway/set/diningRoom/light1Switch:*:default], <[broker:zway/get/diningRoom/light1Switch:*:default], autoupdate="true"}
+Item itemDiningRoomLight1Dimmer {mqtt=">[broker:zway/set/diningRoom/light1Dimmer:*:default], <[broker:zway/get/diningRoom/light1Dimmer:*:default], autoupdate="true"}
 Item itemDiningRoomLight1ElectricMeterWatt {mqtt="<[broker:zway/get/diningRoom/light1ElectricMeterWatt:*:default]"}
 ```
 
