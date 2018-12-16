@@ -15,9 +15,9 @@
 		<qosSubscribe>0</qosSubscribe>
 		<retain>0</retain>
 		<topicPrefix>zway</topicPrefix>
-		<refreshinterval>1</refreshinterval>	
+		<refreshInterval>1</refreshInterval>	
 		<topics>
-			<topic id="2-1-38" property="switch" type="ON_OFF">diningRoom/light1Switch</topic>		
+			<topic refreshInterval="30" id="2-1-38" property="switch" type="ON_OFF">diningRoom/light1Switch</topic>		
 			<topic id="2-1-38" property="dimmer" type="INTEGER">diningRoom/light1Dimmer</topic>
 			<topic id="2-1-49-4" type="FLOAT">diningRoom/light1ElectricMeterWatt</topic>
 			<topic id="12-0-128" type="INTEGER">basement/smokeDetectorBatteryLevel</topic>
