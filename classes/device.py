@@ -1,28 +1,36 @@
 class Device:
 
-  __value = None;
-  __force = False;
-  __updateTime = None;
-  
-  def __init__(self, value, updateTime):
-    self.setValue(value);
-    self.setForce(False);
-    self.setUpdateTime(updateTime);
+	__value = None;
+	__force = False;
+	__refreshTime = None;	
+	__updateTime = None;
 	
-  def getValue(self):
-    return self.__value;
+	def __init__(self, value, refreshTime, updateTime):
+		self.setValue(value);
+		self.setForce(False);
+		self.setRefreshTime(refreshTime);	
+		self.setUpdateTime(updateTime);
 	
-  def setValue(self, value):
-    self.__value = value;
+	def getValue(self):
+		return self.__value;
 	
-  def getForce(self):
-    return self.__force;
+	def setValue(self, value):
+		self.__value = value;
 	
-  def setForce(self, force):
-    self.__force = force;
+	def getForce(self):
+		return self.__force;
 	
-  def getUpdateTime(self):
-    return self.__updateTime;
+	def setForce(self, force):
+		self.__force = force;
+		
+	def getRefreshTime(self):
+		return self.__refreshTime;
 
-  def setUpdateTime(self, updateTime):
-    self.__updateTime = updateTime;
+	def setRefreshTime(self, refreshTime):
+		self.__refreshTime = refreshTime;		
+	
+	def getUpdateTime(self):
+		return self.__updateTime;
+
+	def setUpdateTime(self, updateTime):
+		self.__updateTime = updateTime;

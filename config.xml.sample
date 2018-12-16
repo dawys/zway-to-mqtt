@@ -28,5 +28,11 @@
 		<port>8083</port>
 		<username>username</username>
 		<password>password</password>
+		<update>
+			<device id="2-*">5s</device>
+			<device id="3-*">10m</device>
+			<device id="5-*">1h</device>
+			<device id="12-0-128">1d</device>
+		</update>
 	</zway>
 </config>

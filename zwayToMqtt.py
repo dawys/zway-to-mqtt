@@ -9,13 +9,14 @@ from classes.zwayClient import ZwayClient;
 
 class ZwayToMqtt:
 
-  def __init__(self):
-    config = Config();
+	def __init__(self):
+	
+		config = Config();
 
-    mqttClient = MqttClient(config);
-    zwayClient = ZwayClient(config, mqttClient);
-    mqttClient.subscribe(zwayClient.writeDevice);
-    zwayClient.start();
+		mqttClient = MqttClient(config);
+		zwayClient = ZwayClient(config, mqttClient);
+		mqttClient.subscribe(zwayClient.writeDevice);
+		zwayClient.start();
  
 if __name__ == "__main__":
-  ZwayToMqtt();
+	ZwayToMqtt();
