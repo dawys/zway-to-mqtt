@@ -310,7 +310,10 @@ class ZwayClient:
 
 			if (value != device.getValue()):
 				if (updateTime == None or device.getUpdateTime() == None or updateTime > device.getUpdateTime()):
-					device.setUpdateTime(updateTime);
+					if (updateTime == None):
+						device.setUpdateTime(refreshTime);
+					else:
+						device.setUpdateTime(updateTime);
 					device.setRefreshTime(refreshTime);
 					device.setValue(value);
 					update = True;
