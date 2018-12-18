@@ -1,4 +1,7 @@
 import logging;
+from croniter import croniter;
+from classes.job import Job;
+import time;
 
 class ZwayConfig:
 
@@ -7,11 +10,11 @@ class ZwayConfig:
 	__timeout = 60;
 	__username = None;
 	__password = None;
-	__updateDevices = None;
+	__jobs = None;
 	
 	def __init__(self, root):
 
-		self.setUpdateDevices({});
+		self.setJobs({});
 
 		hostname = root.find("zway/hostname");
 		if (hostname != None and hostname.text.strip() != ""):
@@ -33,31 +36,21 @@ class ZwayConfig:
 		if (password != None and password.text.strip() != ""):
 			self.setPassword(password.text.strip());
 
-		logging.info("Update devices configured:");
-		devices = root.findall("zway/update/device");
-		if (devices != None):
-			for entry in devices:
+		logging.info("cron jobs configured:");
+		jobs = root.findall("zway/cron/job");
+		if (jobs != None):
+			now = time.time();
+		
+			for entry in jobs:
 				attributes = entry.attrib;
 
 				if (entry.text != None and len(entry.text.strip()) > 0 and "id" in attributes and attributes["id"] != None and len(attributes["id"].strip()) > 0):
 
-					value = entry.text.strip();
-
-					time = None;
-					if (value[-1] == "s"):
-						time = long(value[:-1]);
-					elif (value[-1] == "m"):
-						time = long(value[:-1]) * 60;
-					elif (value[-1] == "h"):
-						time = long(value[:-1]) * 60 * 60;
-					elif (value[-1] == "d"):
-						time = long(value[:-1]) * 60 * 60 * 24;
-					else:
-						time = long(value);
-
-					self.getUpdateDevices()[attributes["id"].strip()] = time;
-			
-					logging.info("update node " + attributes["id"].strip() + " all " +str(time) + " seconds");
+					scheduler = croniter(entry.text.strip(), now);
+					job = Job(scheduler, int(scheduler.get_next() * 100));
+					
+					self.getJobs()[attributes["id"].strip()] = job;
+					logging.info("cron job for device with id \"" + attributes["id"].strip() + "\" all " + entry.text.strip() + " and next execution " + time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(job.getNextTime() / 100)));
 			
 	def getHostname(self):
 		return self.__hostname;
@@ -89,8 +82,8 @@ class ZwayConfig:
 	def setPassword(self, password):
 		self.__password = password;
 
-	def getUpdateDevices(self):
-		return self.__updateDevices;
+	def getJobs(self):
+		return self.__jobs;
 
-	def setUpdateDevices(self, updateDevices):
-		self.__updateDevices = updateDevices;
+	def setJobs(self, jobs):
+		self.__jobs = jobs;

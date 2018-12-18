@@ -28,11 +28,12 @@
 		<port>8083</port>
 		<username>username</username>
 		<password>password</password>
-		<update>
-			<device id="2-*">5s</device>
-			<device id="3-*">10m</device>
-			<device id="5-*">1h</device>
-			<device id="12-0-128">1d</device>
-		</update>
+		<cron>
+			<job id="2-*">*/5 * * * *</job>
+			<job id="3-*">*/5 * * * *</job>
+			<job id="5-*">*/5 * * * *</job>
+			<job id="6-*">*/5 * * * *</job>
+			<job id="12-*">0 12 * * *</job>
+		</cron>
 	</zway>
 </config>

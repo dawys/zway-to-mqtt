@@ -1,6 +1,7 @@
 import logging;
 import requests;
 import time;
+import math;
 from threading import Thread;
 
 from classes.topic import Type;
@@ -67,12 +68,6 @@ class ZwayClient:
 	
 	def __setPollInterval(self, pollInterval):
 		self.__pollInterval = pollInterval;
-
-	def __getUpdateDevices(self):
-		return self.__updateDevices;
-
-	def __setUpdateDevices(self, updateDevices):
-		self.__updateDevices = updateDevices;
 	
 	def start(self):
 		for topic in self.__getConfig().getMqtt().getTopics().values():
@@ -88,7 +83,7 @@ class ZwayClient:
 			
 			thread1 = Thread(target=self.__connect, args=[]);
 			thread2 = Thread(target=self.__readDevices, args=[]);
-			thread3 = Thread(target=self.__updateDevices, args=[]);
+			thread3 = Thread(target=self.__cronJobs, args=[]);
 			
 			thread1.start();
 			thread2.start();
@@ -327,39 +322,24 @@ class ZwayClient:
 		if (update):
 			self.__getMqttClient().publish(topic.getPath(), str(device.getValue()));
 
-	def __updateDevices(self):
+	def __cronJobs(self):
 
-		if (self.__getConfig().getZway().getUpdateDevices() != None and self.__getConfig().getZway().getUpdateDevices() > 0):
-
-			pollInterval = None;
-
-			for interval in self.__getConfig().getZway().getUpdateDevices().values():
-				if (pollInterval == None):
-					pollInterval = interval;
-				elif (interval < pollInterval):
-					pollInterval = interval;
-
-			self.__setUpdateDevices({});
+		if (self.__getConfig().getZway().getJobs() != None and self.__getConfig().getZway().getJobs() > 0):
 
 			while True:
-
+			
+				now = (time.time() * 100);			
+			
 				if (self.__getConnected() and self.__getSid() != None):
 
-					now = int(time.time() * 100);
+					for id in self.__getConfig().getZway().getJobs().keys():
 
-					for id in self.__getConfig().getZway().getUpdateDevices().keys():
+						job = self.__getConfig().getZway().getJobs()[id];
+						
+						if (now >= job.getNextTime()):
 
-						update = False;
-						if (id in self.__getUpdateDevices()):
-							if (self.__getUpdateDevices()[id] + self.__getConfig().getZway().getUpdateDevices()[id] * 100 < now):
-								update = True
-						else:
-							update = True;
-
-						if (update):
-
-							self.__getUpdateDevices()[id] = now;
-							
+							job.setNextTime((job.getScheduler().get_next() * 100));
+			
 							for topic in self.__getConfig().getMqtt().getTopics().values():	
 
 								update = False;
@@ -370,6 +350,7 @@ class ZwayClient:
 									update = True;
 
 								if (update):
+									logging.info("update device with id \"" + topic.getId() + "\"");
 									url = self.__getUrl("devices/ZWayVDev_zway_" + topic.getId() + "/command/update");
 
 									try:
@@ -382,8 +363,25 @@ class ZwayClient:
 										self.__setConnected(False);
 									elif (response.status_code != 200):
 										logging.error("could not update device: " + url + "\n" + response.text);
+										
+										
+				nextTime = None;
 
-				for i in range(pollInterval * 10):
+				for job in self.__getConfig().getZway().getJobs().values():
+					if (nextTime == None):
+						nextTime = job.getNextTime();
+					elif (job.getNextTime() < nextTime):
+						nextTime = job.getNextTime();
+						
+				logging.info("next scheduled " + time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(nextTime / 100)));
+
+				nextInterval = int(math.ceil((nextTime - now) / 100));
+				
+				if (nextInterval <= 0):
+					logging.error("next scheduled in " + str(nextInterval) + " seconds!");
+					return;
+
+				for i in range(nextInterval * 10):
 					time.sleep(0.1);
 					if (self.__getStop()):
 						return;
