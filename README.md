@@ -59,6 +59,18 @@ systemctl start zway-to-mqtt.service
   </topics>
 </mqtt>
 ```
+- edit cron jobs for your devices
+```
+<zway>
+		<cron>
+			<job id="2-*">*/5 * * * *</job>
+			<job id="3-*">*/5 * * * *</job>
+			<job id="5-*">*/5 * * * *</job>
+			<job id="6-*">*/5 * * * *</job>
+			<job id="12-*">0 12 * * *</job>
+		</cron>
+</zway>
+```
 
 ## Example
 check if it is working
@@ -96,12 +108,13 @@ copy config.xml.sample to config.xml
 ## Libs required
 the following libraries are required by zwayToMqtt.py
 - python-requests
+- python-croniter
 - python-pip
 - python-enum
 - paho-mqtt
 
 install with
 ```
-apt-get install python-requests python-pip python-enum
+apt-get install python-requests python-croniter python-pip python-enum
 pip install paho-mqtt
 ```
