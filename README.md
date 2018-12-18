@@ -105,7 +105,7 @@ Item itemDiningRoomLight1ElectricMeterWatt {mqtt="<[broker:zway/get/diningRoom/l
 - install binding mqtt and edit things/mqtt.things
 ```
 Bridge mqtt:broker:broker "Mosquitto MQTT Broker" @ "MQTT" [ 
-  host = "max.ub",
+  host = "localhost",
   secure = false,
   port = 1883,
   qos = 0,
@@ -113,8 +113,8 @@ Bridge mqtt:broker:broker "Mosquitto MQTT Broker" @ "MQTT" [
   clientid = "openhab2",
   keep_alive_time = 30000,
   reconnect_time = 60000,
-  username = "openhab",
-  password = "admin"
+  username = "",
+  password = ""
 ]
 
 {
