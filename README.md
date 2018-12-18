@@ -62,13 +62,13 @@ systemctl start zway-to-mqtt.service
 - edit cron jobs for your devices
 ```
 <zway>
-		<cron>
-			<job id="2-*">*/5 * * * *</job>
-			<job id="3-*">*/5 * * * *</job>
-			<job id="5-*">*/5 * * * *</job>
-			<job id="6-*">*/5 * * * *</job>
-			<job id="12-*">0 12 * * *</job>
-		</cron>
+  <cron>
+    <job id="2-*">*/5 * * * *</job>
+    <job id="3-*">*/5 * * * *</job>
+    <job id="5-*">*/5 * * * *</job>
+    <job id="6-*">*/5 * * * *</job>
+    <job id="12-*">0 12 * * *</job>
+  </cron>
 </zway>
 ```
 
@@ -91,13 +91,53 @@ if you want to init all devices
 mosquitto_pub -h localhost -u username -P password -t zway/set/init -m true
 ```
 
-if you are usinf openHAB2 to read and write values
+##  if you are using openHAB2
+
+### Version 1.11.0
 - install binding mqtt and edit services/mqtt.cfg
 - define items
 ```
 Item itemDiningRoomLight1Switch {mqtt=">[broker:zway/set/diningRoom/light1Switch:*:default], <[broker:zway/get/diningRoom/light1Switch:*:default], autoupdate="true"}
 Item itemDiningRoomLight1Dimmer {mqtt=">[broker:zway/set/diningRoom/light1Dimmer:*:default], <[broker:zway/get/diningRoom/light1Dimmer:*:default], autoupdate="true"}
 Item itemDiningRoomLight1ElectricMeterWatt {mqtt="<[broker:zway/get/diningRoom/light1ElectricMeterWatt:*:default]"}
+```
+### Version 2.4.0
+- install binding mqtt and edit things/mqtt.things
+```
+Bridge mqtt:broker:broker "Mosquitto MQTT Broker" @ "MQTT" [ 
+  host = "max.ub",
+  secure = false,
+  port = 1883,
+  qos = 0,
+  retain = false,
+  clientid = "openhab2",
+  keep_alive_time = 30000,
+  reconnect_time = 60000,
+  username = "openhab",
+  password = "admin"
+]
+
+{
+  Thing mqtt:topic:thingDiningRoomLight1 "Diningroom Light 1" @ "MQTT" {
+    Channels:
+      Type switch:switch "Switch" [ 
+        stateTopic = "zway/get/diningRoom/light1Switch", 
+        commandTopic = "zway/set/diningRoom/light1Switch",
+        on="ON",
+        off="OFF"
+      ]
+      Type dimmer:dimmer "Dimmer" [ 
+        stateTopic = "zway/get/diningRoom/light1Dimmer", 
+        commandTopic = "zway/set/diningRoom/light1Dimmer"
+      ]			
+      Type number:electricMeterWatt "Electricmeter in watt" [ 
+        stateTopic = "zway/get/diningRoom/light1ElectricMeterWatt"
+      ]			
+      Type number:electricMeterKwh "Electricmeter in kwh" [ 
+        stateTopic = "zway/get/diningRoom/light1ElectricMeterKwh"
+      ]
+  }
+}
 ```
 
 ## Configuration file
