@@ -92,7 +92,7 @@ class ZwayClient:
 			try:
 				while True:
 					time.sleep(0.1);
-			except KeyboardInterrupt:
+			except (KeyboardInterrupt, SystemExit):
 				self.__setStop(True);
 				thread1.join();
 				thread2.join();
@@ -105,6 +105,8 @@ class ZwayClient:
 			if (not self.__getConnected()):
 		
 				url = self.__getUrl("login");
+				
+				response = None;
 
 				try:
 					response = requests.post(url, {"login": self.__getConfig().getZway().getUsername(), "password": self.__getConfig().getZway().getPassword()});
@@ -112,16 +114,20 @@ class ZwayClient:
 					logging.error("could not connect!");
 					self.__setConnected(False);
 			
-				if (response.status_code == 200):
+				if (response != None):
+					if (response.status_code == 200):
 						self.__setSid(response.json()['data']['sid']);
 						logging.info("logged in to zwave api, got sid:" + self.__getSid());
 						self.__setConnected(True);
-				else:
+					else:
 						self.__setSid(None);
 						logging.error("could not login " + url + ": \n" + response.text);
 						self.__setConnected(False);
-					
-			for i in range(10):
+				else:
+					logging.error("could not login " + url);
+					self.__setConnected(False);
+				
+			for i in range(5 * 10):
 				time.sleep(0.1);
 				if (self.__getStop()):
 					return;
@@ -169,10 +175,8 @@ class ZwayClient:
 				try:
 					response = requests.get(url, headers={"ZWAYSession": self.__getSid()})
 				except requests.exceptions.ConnectionError:
-					logging.error("could not connect!");
+					logging.error("could not connect for wrting device");
 					self.__setConnected(False);
-					sleep(5);
-					self.writeDevice(topic, value);
 					return;
 			
 				if (response.status_code == 200):
@@ -181,8 +185,6 @@ class ZwayClient:
 					logging.info("did update device: " + url);
 				elif (response.status_code == 403):
 					self.__setConnected(False);
-					sleep(5);
-					self.writeDevice(topic, value);
 					return;
 				else:
 					logging.error("could not update device: " + url + "\n" + response.text);
@@ -195,17 +197,18 @@ class ZwayClient:
 			if (self.__getConnected() and self.__getSid() != None):
 			
 				url = self.__getUrl("devices");
+				
+				response = None;
 		
 				try:
 					response = requests.get(url, headers={"ZWAYSession": self.__getSid()});
 				except requests.exceptions.ConnectionError:
-					logging.error("could not connect!");
+					logging.error("could not connect for reading devices");
 					self.__setConnected(False);
 					sleep(5);
-					self.writeDevice(topic, value);
-					return;
 			
-				if (response.status_code == 200):
+				if (response != None and response.status_code == 200):
+				
 					json = response.json();
 
 					if ("data" in json):
@@ -324,42 +327,44 @@ class ZwayClient:
 
 	def __cronJobs(self):
 
-		if (self.__getConfig().getZway().getJobs() != None and self.__getConfig().getZway().getJobs() > 0):
+		if (self.__getConfig().getZway().getJobs() != None and len(self.__getConfig().getZway().getJobs()) > 0):
 
 			while True:
 			
 				now = (time.time() * 100);			
-			
-				if (self.__getConnected() and self.__getSid() != None):
 
-					for id in self.__getConfig().getZway().getJobs().keys():
+				for id in self.__getConfig().getZway().getJobs().keys():
 
-						job = self.__getConfig().getZway().getJobs()[id];
-						
-						if (now >= job.getNextTime()):
+					job = self.__getConfig().getZway().getJobs()[id];
+					
+					if (now >= job.getNextTime()):
 
-							job.setNextTime((job.getScheduler().get_next() * 100));
-			
-							for topic in self.__getConfig().getMqtt().getTopics().values():	
+						job.setNextTime((job.getScheduler().get_next() * 100));
+		
+						for topic in self.__getConfig().getMqtt().getTopics().values():	
 
-								update = False;
-								if (id[-1] == "*"):
-									if (topic.getId()[:len(id) - 1] == id[:-1]):
-										update = True;
-								elif (topic.getId() == id):
+							update = False;
+							if (id[-1] == "*"):
+								if (topic.getId()[:len(id) - 1] == id[:-1]):
 									update = True;
+							elif (topic.getId() == id):
+								update = True;
 
-								if (update):
+							if (update):
+								if (self.__getConnected() and self.__getSid() != None):
+								
 									logging.info("update device with id \"" + topic.getId() + "\"");
 									url = self.__getUrl("devices/ZWayVDev_zway_" + topic.getId() + "/command/update");
+									
+									response = None;
 
 									try:
 										response = requests.get(url, headers={"ZWAYSession": self.__getSid()})
 									except requests.exceptions.ConnectionError:
-										logging.error("could not connect!");
+										logging.error("could not connect for updating devices");
 										self.__setConnected(False);
 								
-									if (response.status_code == 403):
+									if (response == None or response.status_code == 403):
 										self.__setConnected(False);
 									elif (response.status_code != 200):
 										logging.error("could not update device: " + url + "\n" + response.text);
@@ -378,7 +383,7 @@ class ZwayClient:
 				nextInterval = int(math.ceil((nextTime - now) / 100));
 				
 				if (nextInterval <= 0):
-					logging.error("next scheduled in " + str(nextInterval) + " seconds!");
+					logging.error("next scheduled in " + str(nextInterval) + " seconds. Abort now");
 					return;
 
 				for i in range(nextInterval * 10):
